@@ -2,7 +2,7 @@ import string
 import random
 
 
-def generate_key(length=32) -> str:
+def generate_key(length: int = 16) -> str:
     # Создаем набор символов: буквы и цифры
     characters = string.ascii_letters + string.digits + string.punctuation
     # Генерируем строку заданной длины
