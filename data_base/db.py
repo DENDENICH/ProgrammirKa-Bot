@@ -9,16 +9,26 @@ class User:
         self.cur = self.con.cursor()
 
         self.cur.execute("""CREATE TABLE user IF NOT EXISTS (
-                        id INTEGER PRIMARY KEY;
-                        name TEXT;
-                        contact TEXT;
-                        
+                         id INTEGER PRIMARY KEY;
+                         name TEXT;
+                         contact TEXT;
+                         homework TEXT;
+                         progress_stage TEXT;
+                         learning_programm INTEGER
                          )
                          """)
 
-    def register_user(
-            name: str,
-            contact: str
-    ) -> None:
+    def register_user() -> None:
+        """Method for register user"""
+        pass
+
+
+    def set_homework() -> None:
+        """Method for set new homework"""
+        pass
+
+
+    def set_progress_stage() -> None:
+        """Method for set new progress_stage"""
         pass
     
