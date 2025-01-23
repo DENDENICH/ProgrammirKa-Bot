@@ -18,17 +18,17 @@ class User:
                          )
                          """)
 
-    def register_user() -> None:
+    def register_user(self) -> None:
         """Method for register user"""
         pass
 
 
-    def set_homework() -> None:
+    def set_homework(self) -> None:
         """Method for set new homework"""
         pass
 
 
-    def set_progress_stage() -> None:
+    def set_progress_stage(self) -> None:
         """Method for set new progress_stage"""
         pass
     

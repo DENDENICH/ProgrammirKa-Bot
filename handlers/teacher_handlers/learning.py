@@ -1,24 +1,27 @@
-from aiogram import Router, types
-from aiogram.filters import Command, Text
+from aiogram import Router
+from aiogram.types import Message
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
 from utils import register_key
 
 
-router_tch = Router()
+learning_teacher_router = Router()
 
 
-# Состояния для работы с расписанием и домашней работой
-class TeacherState(StatesGroup):
+class ChooseStudentState(StatesGroup):
+    """State for choose student"""
     choosing_student = State()
+
+class TeacherState(StatesGroup):
     choosing_action = State()
     waiting_for_homework = State()
     waiting_for_schedule = State()
 
 
-@router_tch.message(Command("get_register_key"))
-async def get_register_key(message: types.Message):
+@learning_teacher_router.message(Command("get_register_key"))
+async def get_register_key(message: Message):
     """Handler for generate unique auth key"""
     key = register_key.generate_key()
     register_key.save_key(key) # сохранение ключа
@@ -29,7 +32,7 @@ async def get_register_key(message: types.Message):
 
 
 # Хендлер для выбора ученика
-@router_tch.message(Command("manage_students"))
+@learning_teacher_router.message(Command("manage_students"))
 async def manage_students(message: types.Message):
     """Handler for choose student"""
     students = None # получение учеников из базы данных
@@ -39,7 +42,7 @@ async def manage_students(message: types.Message):
     await TeacherState.choosing_student.set()
 
 
-@router_tch.message(TeacherState.choosing_student)
+@learning_teacher_router.message(TeacherState.choosing_student)
 async def choose_student(message: types.Message, state: FSMContext):
     """Reading choose student for edit his data"""
     selected_student = message.text.strip()
@@ -51,7 +54,7 @@ async def choose_student(message: types.Message, state: FSMContext):
     await TeacherState.choosing_action.set()
 
 
-@router_tch.message(TeacherState.waiting_for_homework)
+@learning_teacher_router.message(TeacherState.waiting_for_homework)
 async def process_homework(message: types.Message, state: FSMContext):
     """Set new homework for student"""
     homework = message.text
@@ -60,7 +63,7 @@ async def process_homework(message: types.Message, state: FSMContext):
     await state.clear()
 
 
-@router_tch.message(TeacherState.choosing_action)
+@learning_teacher_router.message(TeacherState.choosing_action)
 async def choose_action(message: types.Message, state: FSMContext):
     action = message.text
     data = await state.get_data()
@@ -76,7 +79,7 @@ async def choose_action(message: types.Message, state: FSMContext):
         await message.answer("Неверное действие. Попробуйте снова.")
 
 
-@router_tch.message(TeacherState.waiting_for_schedule)
+@learning_teacher_router.message(TeacherState.waiting_for_schedule)
 async def process_schedule(message: types.Message, state: FSMContext):
     schedule = message.text
     data = await state.get_data()
@@ -86,7 +89,7 @@ async def process_schedule(message: types.Message, state: FSMContext):
     await state.clear()
 
 
-@router_tch.message(TeacherState.waiting_for_homework)
+@learning_teacher_router.message(TeacherState.waiting_for_homework)
 async def process_homework(message: types.Message, state: FSMContext):
     homework = message.text
     data = await state.get_data()
