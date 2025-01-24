@@ -1,29 +1,28 @@
 from aiogram import Router
 from aiogram.types import Message, ReplyKeyboardMarkup
-from aiogram.filters import Command
+from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
-from utils import register_key
+from utils import parse_datetime
 
 
 learning_teacher_router = Router()
 
 
-class ChooseStudentState(StatesGroup):
+class State(StatesGroup):
     """State for choose student"""
     choosing_student = State()
-
-class TeacherState(StatesGroup):
     choosing_action = State()
-    waiting_for_homework = State()
-    waiting_for_schedule = State()
+    fill_homework = State()
+    fill_schedule = State()
+
 
 
 # command /manage_student
 # choose student
 @learning_teacher_router.message(Command("manage_student"))
-async def manage_students(message: Message):
+async def manage_students(message: Message, state: FSMContext):
     """Handler for choose student"""
     students = None # получение учеников из базы данных
     # выгрузка всех учеников из базы данных
@@ -32,61 +31,88 @@ async def manage_students(message: Message):
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*students)
     await message.answer("Выберите ученика:", reply_markup=keyboard)
-    await TeacherState.choosing_student.set()
+    await state.set_state(State.choosing_student) # set state after choosing student
 
 
-@learning_teacher_router.message(TeacherState.choosing_student)
+# Handler will be trigered if choosing student
+@learning_teacher_router.message(StateFilter(State.choosing_student))
 async def choose_student(message: Message, state: FSMContext):
     """Reading choose student for edit his data"""
     selected_student = message.text.strip()
     # TODO: Проверить, существует ли ученик в базе данных
-    await state.update_data(selected_student=selected_student)
+    # await state.update_data(selected_student=selected_student)
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add("Установить расписание", "Назначить домашнее задание")
+    # TODO: Сделать клавиатуру для выбора действий
+    keyboard.add(
+        "Установить расписание", 
+        "Назначить домашнее задание"
+        )
     await message.answer(reply_markup=keyboard)
-    await TeacherState.choosing_action.set()
+    await state.set_state(State.choosing_action.set())
 
 
-@learning_teacher_router.message(TeacherState.waiting_for_homework)
+
+# command /set_schedule:
+# Handler for set state for schedule
+@learning_teacher_router.message(
+    StateFilter(State.choosing_action),
+    Command(commands="set_schedule")
+    )
+async def choose_schedule(message: Message, state: FSMContext):
+    """Set state schedule for set schedule"""
+    # data = await state.get_data()
+    # selected_student = data.get("selected_student")
+    # TODO: получение расписания из БД или машины состояний
+    exists = None
+    await message.answer(
+        "Текущее расписание \n"
+        f"{exists}\n"
+        "Новое расписание:\n"
+        "Формат:\n"
+        "<день недели> - <время>\n<день недели> - <время>"
+    )
+    await state.set_data(State.fill_schedule)
+
+
+# command /set_homework:
+# Handler for set state for homework
+@learning_teacher_router.message(
+    StateFilter(State.choosing_action),
+    Command(commands="set_homework")
+    )
+async def choose_homework(message: Message, state: FSMContext):
+    """Set state homework for set homework"""
+    # data = await state.get_data()
+    # selected_student = data.get("selected_student")
+    # TODO: получение домашнего задания из БД или машины состояний
+    exists = None
+    await message.answer(
+        "Текущее задание:\n"
+        f"{exists}\n"
+        "Новое домашнее задание:"
+    )
+    await state.set_data(State.fill_homework)
+
+
+
+# This handler will trigered if homework state is active
+@learning_teacher_router.message(StateFilter(State.fill_homework))
 async def process_homework(message: Message, state: FSMContext):
     """Set new homework for student"""
     homework = message.text
     # TODO: Сохранить домашнее задание в базе данных
-    await message.answer(f"Домашнее задание назначено: {homework}")
+    await message.answer(f"Домашнее задание назначено")
     await state.clear()
 
 
-@learning_teacher_router.message(TeacherState.choosing_action)
-async def choose_action(message: Message, state: FSMContext):
-    action = message.text
-    data = await state.get_data()
-    selected_student = data.get("selected_student")
-
-    if action == "Установить расписание":
-        await message.answer(f"Введите расписание для {selected_student} в формате: День - Время")
-        await TeacherState.waiting_for_schedule.set()
-    elif action == "Назначить домашнее задание":
-        await message.answer(f"Введите домашнее задание для {selected_student}.")
-        await TeacherState.waiting_for_homework.set()
-    else:
-        await message.answer("Неверное действие. Попробуйте снова.")
-
-
-@learning_teacher_router.message(TeacherState.waiting_for_schedule)
+# This handler will trigered if schedule state is active
+@learning_teacher_router.message(StateFilter(State.fill_schedule))
 async def process_schedule(message: Message, state: FSMContext):
-    schedule = message.text
-    data = await state.get_data()
-    selected_student = data.get("selected_student")
+    """Set new shedule for student, parsing time"""
+    schedules_time = parse_datetime.parse_schedule(schedule=message.text)
+    # data = await state.get_data()
+    # selected_student = data.get("selected_student")
     # TODO: Сохранить расписание в базе данных
-    await message.answer(f"Расписание для {selected_student} установлено: {schedule}")
+    await message.answer(f"Расписание установлено")
     await state.clear()
 
-
-@learning_teacher_router.message(TeacherState.waiting_for_homework)
-async def process_homework(message: Message, state: FSMContext):
-    homework = message.text
-    data = await state.get_data()
-    selected_student = data.get("selected_student")
-    # TODO: Сохранить домашнее задание в базе данных
-    await message.answer(f"Домашнее задание для {selected_student} назначено: {homework}")
-    await state.clear()
