@@ -1,15 +1,15 @@
 from dataclasses import dataclass
-from datetime import datetime, time
+from datetime import time
 
 
 @dataclass(frozen=True, slots=True)
-class DateScheldue:
+class DateSchedule:
     time_scheldue: time
     day_week: int
 
 
 
-def parse_schedule(schedule: str) -> list[DateScheldue]:
+def parse_schedule(schedule: str) -> list[DateSchedule]:
     """Parse all date from string schedules
     
     :param schedule: строка с расписанием.
@@ -42,17 +42,10 @@ def parse_schedule(schedule: str) -> list[DateScheldue]:
         # parsing time
         hours, minutes = map(int, t.split(":"))
         result.append(
-            DateScheldue(
+            DateSchedule(
         time_scheldue=time(hour=hours, minute=minutes),
         day_week=days_of_week[day]
         )
     )
         
     return result
-
-# # Пример использования
-# schedule_str = """Понедельник - 14:30
-# Среда - 09:00"""
-
-# dates = parse_schedule(schedule_str)
-# print(dates)

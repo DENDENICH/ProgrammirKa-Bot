@@ -14,7 +14,7 @@ from aiogram.fsm.state import StatesGroup, State
 from utils import register_key
 from filters import register_filter
 
-from schemas import StudentModel
+from schemas.schemas import
 
 
 basic_student_router = Router()
