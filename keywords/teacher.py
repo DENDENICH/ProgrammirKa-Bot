@@ -15,11 +15,3 @@ action_on_student = InlineKeyboardMarkup(
     ]
 )
 
-cancel = InlineKeyboardMarkup(
-    inline_keyboard=[
-        [InlineKeyboardButton(
-            text="Назад",
-            callback_data="cancel"
-        )]
-    ]
-)

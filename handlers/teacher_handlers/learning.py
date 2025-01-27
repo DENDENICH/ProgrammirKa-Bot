@@ -7,6 +7,7 @@ from aiogram.fsm.state import StatesGroup, State
 from utils import parse_datetime
 from keywords.teacher import action_on_student, cancel
 
+
 learning_teacher_router = Router()
 
 
@@ -21,7 +22,7 @@ class FSMLearning(StatesGroup):
 
 # command /manage_student
 # choose student
-@learning_teacher_router.message(Command("manage_student"))
+@learning_teacher_router.message(Command("edit_student"))
 async def manage_students(message: Message, state: FSMContext):
     """Handler for choose student"""
     # получение учеников из базы данных
@@ -112,4 +113,3 @@ async def process_schedule(message: Message, state: FSMContext):
     # TODO: Сохранить расписание в базе данных
     await message.answer(f"Расписание установлено")
     await state.clear()
-
