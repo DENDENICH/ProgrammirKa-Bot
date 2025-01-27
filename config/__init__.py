@@ -1,1 +1,1 @@
-from config import tg_config
+from .config import tg_config, bot, dp
