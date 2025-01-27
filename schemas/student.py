@@ -1,16 +1,16 @@
 
 from dataclasses import dataclass
-from datetime import time
+
 
 
 @dataclass(frozen=True, slots=True)
-class StudentRegistry:
+class StudentRegistryBot:
     name: str
     contact: str
 
 
 @dataclass(frozen=True, slots=True)
-class StudentModel:
+class StudentModelDB:
     id: int
     tg_id: int
     name: str
