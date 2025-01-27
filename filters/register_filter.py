@@ -14,6 +14,6 @@ def is_correct_phone_number(message: Message) -> bool:
     return bool(pattern.match(message.text.strip()))
 
 
-def is_not_register_student(message: Message) -> bool:
+def check_user_exists(message: Message) -> bool:
     # TODO: проверка присутствия ученика в БД по id его ТГ
     pass
