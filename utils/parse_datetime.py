@@ -1,12 +1,7 @@
 from dataclasses import dataclass
 from datetime import time
 
-
-@dataclass(frozen=True, slots=True)
-class DateSchedule:
-    time_scheldue: time
-    day_week: int
-
+from schemas.datetime import DateSchedule, DayWeek
 
 
 def parse_schedule(schedule: str) -> list[DateSchedule]:
@@ -15,16 +10,6 @@ def parse_schedule(schedule: str) -> list[DateSchedule]:
     :param schedule: строка с расписанием.
     :return: список объектов datetime.
     """
-    # Словарь соответствий для дней недели
-    days_of_week = {
-        "Понедельник": 0,
-        "Вторник": 1,
-        "Среда": 2,
-        "Четверг": 3,
-        "Пятница": 4,
-        "Суббота": 5,
-        "Воскресенье": 6,
-    }
     
     # split all date
     lines = schedule.split("\n")
@@ -34,9 +19,9 @@ def parse_schedule(schedule: str) -> list[DateSchedule]:
         if not line.strip():
             continue
         day, t = line.split(" - ")
-        day, t = day.strip(), t.strip()
+        day, t = int(day.strip()), t.strip()
         
-        if day not in days_of_week:
+        if day not in ['pass']:
             raise ValueError(f"Некорректный день недели: {day}")
         
         # parsing time
@@ -44,8 +29,11 @@ def parse_schedule(schedule: str) -> list[DateSchedule]:
         result.append(
             DateSchedule(
         time_scheldue=time(hour=hours, minute=minutes),
-        day_week=days_of_week[day]
+        day_week=DayWeek[day]
         )
     )
         
     return result
+
+
+print(DayWeek.find('week'))
