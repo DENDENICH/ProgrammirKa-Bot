@@ -1,11 +1,12 @@
 from aiogram.types import Message
-
 import re
 
-def is_correct_phone_number(message: Message) -> bool:
-    """Проверяет, является ли строка корректным российским номером телефона.
+from data_base import data_base
 
-        Правила:
+
+def is_correct_phone_number(message: Message) -> bool:
+    """Check russian number phone.
+
         - startwith +7 or 8.
         - ten numbers.
         - space, defice is correct.
@@ -15,5 +16,5 @@ def is_correct_phone_number(message: Message) -> bool:
 
 
 def check_user_exists(message: Message) -> bool:
-    # TODO: проверка присутствия ученика в БД по id его ТГ
-    pass
+    """Check exists student in data base"""
+    return True if data_base.get_user(tg_id=message.id) else False
