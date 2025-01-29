@@ -5,11 +5,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
 from utils import parse_datetime
-from keywords.commands import teacher_command
+from commands.commands import teacher_command
 from config import tg_config, bot
 
-
-# TODO: хендлер старт для отправки меню команд
 
 
 start_teacher_router = Router()

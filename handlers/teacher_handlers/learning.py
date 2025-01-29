@@ -38,7 +38,6 @@ async def manage_students(message: Message, state: FSMContext):
 async def choose_student(message: Message, state: FSMContext):
     """Reading choose student for edit his data"""
     selected_student = message.text.strip()
-    # TODO: Проверить, существует ли ученик в базе данных
     # await state.update_data(selected_student=selected_student)
     await message.answer(
         text=f"{selected_student}",

@@ -3,7 +3,6 @@ from aiogram import (
     F
 )
 from aiogram.filters import (
-    Command,
     CommandStart,
     StateFilter
 )
@@ -17,6 +16,7 @@ from filters import register_filter
 
 from schemas.student import StudentRegistryBot
 
+
 register_student_router = Router()
 
 
@@ -26,9 +26,7 @@ class RegistrationFSM(StatesGroup):
     fill_key = State()
     fill_name = State()
     fill_contact = State()
-
-
-# TODO: хендлер старт для проверки, регестрации нового пользователя и отправки меню команд
+    fill_schedule = State()
 
 
 # command /register
@@ -69,9 +67,8 @@ async def process_registration_key(message: Message, state: FSMContext):
 
 # This handler will be triggered if name is correct
 @register_student_router.message(StateFilter(RegistrationFSM.fill_name), F.text.strip().isalpha())
-async def process_name(message: Message, state: FSMContext):
-    """Process input name"""
-    # save name in storage by key "name"
+async def process_phone_number(message: Message, state: FSMContext):
+    """Read name and process phone number"""
     await state.update_data(name=message.text.strip())
     await message.answer(f"Теперь введи номер телефона ученика")
     await state.set_state(RegistrationFSM.fill_contact)
@@ -79,8 +76,8 @@ async def process_name(message: Message, state: FSMContext):
 
 # This handler will be triggered if name is incorrect
 @register_student_router.message(StateFilter(RegistrationFSM.fill_name))
-async def process_name(message: Message, state: FSMContext):
-    """Process input name"""
+async def name_incorrect(message: Message, state: FSMContext):
+    """If name incorrect"""
     # save name in storage by key "name"
     await message.answer(
         "Кажется, это не похоже на имя..."
@@ -88,26 +85,42 @@ async def process_name(message: Message, state: FSMContext):
     )
 
 
+
 # This handler will be triggered if contact is correct
 @register_student_router.message(
     StateFilter(RegistrationFSM.fill_contact),
     register_filter.is_correct_phone_number
 )
-async def process_name(message: Message, state: FSMContext):
-    """Process input name"""
+async def process_schedules(message: Message, state: FSMContext):
+    """Read phone number and process input schedules"""
     # save contact in storage by key "contact"
-    await state.update_data(contact=message.text.strip())
-    await message.answer(f"Отлично, вы зарегестрированы :)")
-
-    # TODO: сохранение данных пользователя в датакласс, затем в базу данных
-    await state.clear() # clear state
+    await state.update_data(phone_number=message.text.strip())
+    await message.answer(
+        "Хорошо, а теперь время установить расписание!\n\n"
+        "*Формат ввода расписания:*\n"
+        "<день недели> - <время (16:00)>\n<день недели> - <время (16:00)>\n\n"
+        "*Или:*\n"
+        "<день недели> - <время (16:00)>; <день недели> - <время (16:00)>"
+    )
+    await state.set_state(RegistrationFSM.fill_schedule)
 
 
 # This handler will be triggered if contact is incorrect
 @register_student_router.message(StateFilter(RegistrationFSM.fill_contact),)
-async def process_name(message: Message, state: FSMContext):
-    """Process input name"""
+async def incorrect_phone_number(message: Message, state: FSMContext):
+    """If phone number is incorrect"""
     await message.answer(
         "Это не похоже на номер телефона или же он не является российским"
         "Пожалуйста, введите номер телефона ученика"
     )
+
+
+
+# This handler will be triggered if user is registry
+# This registration his schedule
+@register_student_router.message(StateFilter(RegistrationFSM.fill_schedule))
+async def register_user(message: Message, state: FSMContext):
+    """Read shedulers and process register user"""
+    # TODO: сохранение данных пользователя в датакласс, затем в базу данных
+    data_user = await state.get_data
+    await state.clear() # clear state

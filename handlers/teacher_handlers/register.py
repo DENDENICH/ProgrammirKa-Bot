@@ -27,4 +27,6 @@ async def get_register_keys(message: Message):
     await message.answer(
         "Список сохраненных ключей:\n"
         f"```{keys}```".format(keys="\n".join(keys_list))
-    )
+        )
+
+
