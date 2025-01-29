@@ -12,6 +12,7 @@ env.read_env()
 
 class TGConfig:
     token: str = env('token')
+    token_ai: str = env('token_ai')
     admin_id: int = int(env('admin_id'))
 
 
