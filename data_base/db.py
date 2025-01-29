@@ -1,8 +1,10 @@
 import json
 import aiosqlite
+import asyncio
 
 from utils.parse_datetime import DateSchedule
 from schemas.student import StudentModelDB, StudentRegistryBot
+from schemas.homework import HomeworkInformation
 
 
 class DataBase:
@@ -26,8 +28,8 @@ class DataBase:
                              name TEXT NOT NULL;
                              contact TEXT NOT NULL;
                              homework TEXT;
-                             homework_completed BOOLEAN NOT NULL;
-                             count_help_homework INTEGER NOT NULL;
+                             homework_completed BOOLEAN;
+                             count_help_homework INTEGER;
                                 )
                              """)
 
@@ -42,35 +44,72 @@ class DataBase:
                 users.append(StudentModelDB(*row))
         return users
 
+
     async def get_user(self, tg_id: int) -> tuple | None:
         """Method for get one user for checking exists"""
         async with self.connect as cursor:
-            result = await cursor.execute("SELECT * FROM user WHERE tg_id = %d" % tg_id)
+            result = await cursor.execute("SELECT * FROM user WHERE tg_id = %s", (tg_id,))
         return result
 
-    async def register_user(self) -> None:
+
+    async def register_user(self, user: StudentRegistryBot) -> None:
         """Method for register user"""
-        pass
+        async with self.connect as cursor:
+            await cursor.execute("""INSERT INTO student 
+                                (tg_id, name, contact)
+                                VALUES (%s, %s, %s)""",
+                                 (user.tg_id, user.name, user.contact,)
+                                  )
 
 
-    async def set_homework(self) -> None:
+    async def set_homework(
+        self, 
+        tg_id: int,
+        new_homework: str
+    ) -> None:
         """Method for set new homework"""
-        pass
+        async with self.connect as cursor:
+            await cursor.execute("""INSERT INTO student 
+                                (homework, homework_completed, count_help_homework)
+                                VALUES (%s, %s, %s)
+                                WHERE tg_id = %s""",
+                                 (new_homework, True, 3, tg_id,)
+                                )
 
 
-    async def get_homework(self) -> None:
+    async def get_homework(self, tg_id: int) -> HomeworkInformation:
         """Method for get homework"""
-        pass
+        async with self.connect as cursor:
+            result = await cursor.execute("""SELECT (homework, homework_completed, count_help_homework) FROM user 
+                                          WHERE tg_id = %s""", 
+                                          (tg_id,))
+        return HomeworkInformation(*result.fetchone())
 
 
-    async def complete_homework(self) -> None:
+    async def complete_homework(self, tg_id: int) -> None:
         """Method for complete homework"""
-        pass
+        async with self.connect as cursor:
+            await cursor.execute("""INSERT INTO student 
+                                homework_completed
+                                VALUES (%s)
+                                WHERE tg_id = %s""",
+                                 (True, tg_id,)
+                                )
+    
 
-
-    async def division_count_help_homework(self) -> None:
+    async def set_new_count_help_homework(
+            self, 
+            tg_id: int, 
+            new_count_help_homework: int
+        ) -> None:
         """division count help homework"""
-        pass
+        async with self.connect as cursor:
+            await cursor.execute("""INSERT INTO student 
+                                count_help_homework
+                                VALUES (%s)
+                                WHERE tg_id = %s""",
+                                 (new_count_help_homework, tg_id,)
+                                )
 
 
 
@@ -94,6 +133,6 @@ class JsonSchedule:
         """Method for get schedule on user"""
         pass
 
-
-data_base = DataBase()
+ 
+data_base = DataBase() # TODO: инициализировать базу данных
 json_schedule = JsonSchedule()
