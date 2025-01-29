@@ -7,6 +7,7 @@ from dataclasses import dataclass
 class StudentRegistryBot:
     name: str
     contact: str
+    tg_id: int
 
 
 @dataclass(frozen=True, slots=True)
