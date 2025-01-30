@@ -1,4 +1,5 @@
 import random
+from config import bot
 
 homework_dialog = [
     "Хэй, пора выполнить домашнее задание!",
@@ -7,13 +8,17 @@ homework_dialog = [
 ]
 
 
-def notification_homework_student() -> str:
-    return random.choice(homework_dialog)
+async def notification_homework_student(chat_id: int) -> str:
+    message = random.choice(homework_dialog)
+    await bot.send_message(chat_id, message)
 
 
-def notification_homework_teacher(
+async def notification_homework_teacher(
         name_student: str,
+        chat_id: int
 ) -> str:
-    return f"У {name_student} был урок. Пора задать новую домашку"
+    await bot.send_message(
+        chat_id, 
+        f"У {name_student} был урок. Пора задать новую домашку"
+        )
     
-

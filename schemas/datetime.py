@@ -6,7 +6,15 @@ from enum import Enum
 class DateSchedule:
     hour: int
     minute: int
-    day_week: str
+    day_week: list[str]
+
+
+    def get_notice_days() -> str:
+        pass
+
+
+    def get_lesson_days() -> str:
+        pass
 
 
 class DayWeek(str, Enum):
