@@ -1,19 +1,26 @@
-from dataclasses import dataclass
+from typing import Optional
+from dataclasses import dataclass, field
 from enum import Enum
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(slots=True)
 class DateSchedule:
     hour: int
     minute: int
-    day_week: list[str]
+    lesson_days_week: list[str]
+    not_lesson_days_week: Optional[list[str] | None] = field(default=None)
 
+    def __post_init__(self):
+        if not self.not_lesson_days_week:
+            self.not_lesson_days_week = self.get_list_not_lesson_days_week()
 
-    def get_notice_days() -> str:
+    def get_list_not_lesson_days_week(self) -> list[str]:
         pass
 
+    def get_string_not_lesson_days(self) -> str:
+        pass
 
-    def get_lesson_days() -> str:
+    def get_string_lesson_days(self) -> str:
         pass
 
 

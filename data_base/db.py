@@ -3,7 +3,7 @@ import aiosqlite
 import asyncio
 
 from utils.parse_datetime import DateSchedule
-from schemas.student import StudentModelDB, StudentRegistryBot
+from schemas.student import Student
 from schemas.homework import HomeworkInformation
 
 
@@ -34,25 +34,29 @@ class DataBase:
                              """)
 
 
-    async def get_users(self) -> list[StudentModelDB]:
+    async def get_users(self) -> list[Student]:
         """Method to get all users"""
+        # TODO: переделать создание объекта StudentModel и столбцы данных извлечения
         users = list()
         async with self.connect as cursor:
-            result = await cursor.execute("SELECT * FROM user")
+            result = await cursor.execute("SELECT (tg_id, name, contact) FROM student")
             rows = await result.fetchall()
             for row in rows:
-                users.append(StudentModelDB(*row))
+                users.append(Student(*row))
         return users
 
 
-    async def get_user(self, tg_id: int) -> tuple | None:
+    async def get_user(self, tg_id: int) -> Student:
         """Method for get one user for checking exists"""
         async with self.connect as cursor:
-            result = await cursor.execute("SELECT * FROM user WHERE tg_id = %s", (tg_id,))
-        return result
+            result = await cursor.execute("""SELECT (tg_id, name, contact) FROM student 
+                                            WHERE tg_id = %s""",
+                                            (tg_id,))
+            user = await result.fetchone()
+        return Student(*user)
 
 
-    async def register_user(self, user: StudentRegistryBot) -> None:
+    async def register_user(self, user: Student) -> None:
         """Method for register user"""
         async with self.connect as cursor:
             await cursor.execute("""INSERT INTO student 
@@ -80,10 +84,11 @@ class DataBase:
     async def get_homework(self, tg_id: int) -> HomeworkInformation:
         """Method for get homework"""
         async with self.connect as cursor:
-            result = await cursor.execute("""SELECT (homework, homework_completed, count_help_homework) FROM user 
+            result = await cursor.execute("""SELECT (homework, homework_completed, count_help_homework) FROM student 
                                           WHERE tg_id = %s""", 
                                           (tg_id,))
-        return HomeworkInformation(*result.fetchone())
+            homework = await result.fetchone()
+        return HomeworkInformation(*homework)
 
 
     async def complete_homework(self, tg_id: int) -> None:

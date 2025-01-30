@@ -1,25 +1,29 @@
-from typing import Callable
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from schemas.datetime import DateSchedule
-from message import notification_homework_student, notification_homework_teacher
 from config import tg_config
+
+from notification_functions import(
+    check_and_notification_homework_student,
+    check_conducted_lesson
+)
+
 
 # initialize scheduler
 scheduler = AsyncIOScheduler()
 
 
-def create_notifications_homework_student(
+def notifications_homework_student(
     schedulers: list[DateSchedule],
-    user_id: int
+    student_id: int
 ) -> None:
     # создание уведомлений по домашней работе
     # исключение тех дней, когда назначен урок
     for sched in schedulers:
         scheduler.add_job(
-            func=notification_homework_student,
-            args=[user_id],
+            func=check_and_notification_homework_student,
+            kwargs={'student_id': student_id},
             trigger=CronTrigger(
                 day_of_week=sched.get_notice_days(),
                 hour=sched.hour,
@@ -28,26 +32,18 @@ def create_notifications_homework_student(
         )
 
 
-def create_notifications_homework_student(
+def create_notifications_homework_teacher(
         schedulers: list[DateSchedule],
-        user_id: int = tg_config.admin_id
+        student_id: int,
+        teacher_id: int = tg_config.admin_id
 ) -> None:
-    for sched in schedulers:
+    for sch in schedulers:
         scheduler.add_job(
-            func=notification_homework_student,
-            args=[user_id],
+            func=check_conducted_lesson,
+            kwargs={'student_id': student_id, 'teacher_id': teacher_id},
             trigger=CronTrigger(
-                day_of_week=sched.get_lesson_days(),
-                hour=sched.hour + 1, # get notice after lesson
-                minute=sched.minute,
+                day_of_week=sch.get_lesson_days(),
+                hour=sch.hour + 1, # get notice after lesson
+                minute=sch.minute,
             )
         )
-        
-
-
-def delete_notification_homework_student():
-    pass
-
-
-def delete_notification_homework_teacher():
-    pass

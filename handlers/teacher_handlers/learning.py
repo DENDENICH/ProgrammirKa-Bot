@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
 from utils import parse_datetime
-from keywords.teacher import action_on_student, cancel
+from keywords.teacher import action_on_student
 
 
 learning_teacher_router = Router()
