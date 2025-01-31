@@ -28,6 +28,7 @@ async def check_conducted_lesson(
     student = await data_base.get_user(tg_id=student_id)
     await notification_homework_teacher(
         teacher_id=teacher_id,
+        student_id=student.tg_id,
         name_student=student.name
     )
 

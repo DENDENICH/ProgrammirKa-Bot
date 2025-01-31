@@ -1,22 +1,33 @@
+import re
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
-from utils import parse_datetime
-from keywords.teacher import action_on_student
+from utils import parse_datetime, parse_data
 
+from data_base import data_base
+
+from keywords.teacher import action_on_student, get_keywords_of_students
+from keywords.basic import cancel
+
+from filters.filters import(
+    command_choose_student,
+    command_yes_complete_homework,
+    command_no_complete_homework
+)
 
 learning_teacher_router = Router()
 
 
 class FSMLearning(StatesGroup):
     """State for choose student"""
-    choosing_student = State()
+    choose_student = State()
     choosing_action = State()
     fill_homework = State()
     fill_schedule = State()
+    set_new_homework = State() 
 
 
 
@@ -25,22 +36,25 @@ class FSMLearning(StatesGroup):
 @learning_teacher_router.message(Command("edit_student"))
 async def manage_students(message: Message, state: FSMContext):
     """Handler for choose student"""
-    # получение учеников из базы данных
-    # выгрузка всех учеников из базы данных
-    # загрузка в машину состояний для дальнейшего общения между хендлерами
-    # Вывод списка учеников и кнопок с именем ученика
-    await message.answer("Выберите ученика:")
-    await state.set_state(FSMLearning.choosing_student) # set state after choosing student
+    students = await data_base.get_users()
+    await message.answer(
+        text="Выберите ученика:",
+        reply_markup=get_keywords_of_students(students=students)
+        )
 
 
 # Handler will be trigered if choosing student
-@learning_teacher_router.message(StateFilter(FSMLearning.choosing_student))
-async def choose_student(message: Message, state: FSMContext):
+@learning_teacher_router.message(
+        StateFilter(FSMLearning.choose_student),
+        command_choose_student
+        )
+async def choose_student(callback: CallbackQuery, state: FSMContext):
     """Reading choose student for edit his data"""
-    selected_student = message.text.strip()
-    # await state.update_data(selected_student=selected_student)
-    await message.answer(
-        text=f"{selected_student}",
+    name, id = parse_data.parse_data_edit_student(data=callback.data)
+    
+    # TODO: сохранение tg_id в машину состояний
+    await callback.answer(
+        text=f"Ученик {name}",
         reply_markup=action_on_student,
     )
     await state.set_state(FSMLearning.choosing_action)
@@ -111,4 +125,42 @@ async def process_schedule(message: Message, state: FSMContext):
     # selected_student = data.get("selected_student")
     # TODO: Сохранить расписание в базе данных
     await message.answer(f"Расписание установлено")
+    await state.clear()
+
+
+
+# This handler will trigered if lesson is not complete
+@learning_teacher_router.message(command_no_complete_homework)
+async def yes_complete_lesson(callback: CallbackQuery):
+    """Notificate about new homework, stay relevant old homework"""
+    await callback.message.edit_text(
+        "Старое домашнее задание осталось актуальным"
+    )
+
+
+# This handler will trigered if lesson is yes complete
+@learning_teacher_router.message(command_yes_complete_homework)
+async def yes_complete_lesson(callback: CallbackQuery, state: FSMContext):
+    """Notificate about new homework, and update nofications homework"""
+    await state.set_data(
+        {'tg_id_homework': parse_data.parse_id_in_query_complete_homework(data=callback.data)}
+        )
+    await callback.message.edit_text(
+        "Назначьте новое домашнее задание:"
+    )
+    await state.set_state(FSMLearning.set_new_homework)
+
+
+# This handler will trigered after input new homework
+@learning_teacher_router.message(StateFilter(FSMLearning.set_new_homework))
+async def yes_complete_lesson(message: Message, state: FSMContext):
+    """Notificate about new homework, and update nofications homework"""
+    id = await state.get_value('tg_id_homework')
+    await data_base.set_homework(
+        tg_id=id,
+        new_homework=message.text.strip()
+        )
+    await message.answer(
+        "Новое домашнее задание назначено!"
+    )
     await state.clear()

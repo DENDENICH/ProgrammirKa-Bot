@@ -12,7 +12,7 @@ from aiogram.fsm.state import StatesGroup, State
 
 from config import tg_config
 from utils.register_key import keys
-from filters import register_filter
+from filters import filters
 
 from schemas.student import StudentRegistryBot
 
@@ -34,7 +34,7 @@ class RegistrationFSM(StatesGroup):
 @register_student_router.message(
     CommandStart(),
     lambda message: message.id not in tg_config.admin_id,
-    register_filter.check_user_exists  # check key exists in storage before registration
+    filters.check_user_exists  # check key exists in storage before registration
     )
 async def start(message: Message, state: FSMContext):
     """Getting key for registration"""
@@ -89,7 +89,7 @@ async def name_incorrect(message: Message, state: FSMContext):
 # This handler will be triggered if contact is correct
 @register_student_router.message(
     StateFilter(RegistrationFSM.fill_contact),
-    register_filter.is_correct_phone_number
+    filters.is_correct_phone_number
 )
 async def process_schedules(message: Message, state: FSMContext):
     """Read phone number and process input schedules"""
