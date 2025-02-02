@@ -20,15 +20,12 @@ def notifications_homework_student(
 ) -> None:
     # создание уведомлений по домашней работе
     # исключение тех дней, когда назначен урок
-    for sched in schedulers:
+    for sch in schedulers:
+
         scheduler.add_job(
             func=check_and_notification_homework_student,
             kwargs={'student_id': student_id},
-            trigger=CronTrigger(
-                day_of_week=sched.get_notice_days(),
-                hour=sched.hour,
-                minute=sched.minute,
-            )
+            trigger=
         )
 
 
@@ -42,7 +39,7 @@ def create_notifications_homework_teacher(
             func=check_conducted_lesson,
             kwargs={'student_id': student_id, 'teacher_id': teacher_id},
             trigger=CronTrigger(
-                day_of_week=sch.get_lesson_days(),
+                day_of_week=sch.get_string_lesson_days(),
                 hour=sch.hour + 1, # get notice after lesson
                 minute=sch.minute,
             )

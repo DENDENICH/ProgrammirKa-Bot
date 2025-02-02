@@ -14,7 +14,7 @@ from config import tg_config
 from utils.register_key import keys
 from filters import filters
 
-from schemas.student import StudentRegistryBot
+from schemas.student import Student, StudentKeyDataFSM
 
 
 register_student_router = Router()
@@ -87,22 +87,22 @@ async def name_incorrect(message: Message, state: FSMContext):
 
 
 # This handler will be triggered if contact is correct
-@register_student_router.message(
-    StateFilter(RegistrationFSM.fill_contact),
-    filters.is_correct_phone_number
-)
-async def process_schedules(message: Message, state: FSMContext):
-    """Read phone number and process input schedules"""
-    # save contact in storage by key "contact"
-    await state.update_data(phone_number=message.text.strip())
-    await message.answer(
-        "Хорошо, а теперь время установить расписание!\n\n"
-        "*Формат ввода расписания:*\n"
-        "<день недели> - <время (16:00)>\n<день недели> - <время (16:00)>\n\n"
-        "*Или:*\n"
-        "<день недели> - <время (16:00)>; <день недели> - <время (16:00)>"
-    )
-    await state.set_state(RegistrationFSM.fill_schedule)
+# @register_student_router.message(
+#     StateFilter(RegistrationFSM.fill_contact),
+#     filters.is_correct_phone_number
+# )
+# async def process_schedules(message: Message, state: FSMContext):
+#     """Read phone number and process input schedules"""
+#     # save contact in storage by key "contact"
+#     await state.update_data(phone_number=message.text.strip())
+#     await message.answer(
+#         "Хорошо, а теперь время установить расписание!\n\n"
+#         "*Формат ввода расписания:*\n"
+#         "<день недели> - <время (16:00)>\n<день недели> - <время (16:00)>\n\n"
+#         "*Или:*\n"
+#         "<день недели> - <время (16:00)>; <день недели> - <время (16:00)>"
+#     )
+#     await state.set_state(RegistrationFSM.fill_schedule)
 
 
 # This handler will be triggered if contact is incorrect
@@ -116,11 +116,11 @@ async def incorrect_phone_number(message: Message, state: FSMContext):
 
 
 
-# This handler will be triggered if user is registry
-# This registration his schedule
-@register_student_router.message(StateFilter(RegistrationFSM.fill_schedule))
-async def register_user(message: Message, state: FSMContext):
-    """Read shedulers and process register user"""
-    # TODO: сохранение данных пользователя в датакласс, затем в базу данных
-    data_user = await state.get_data
-    await state.clear() # clear state
+# # This handler will be triggered if user is registry
+# # This registration his schedule
+# @register_student_router.message(StateFilter(RegistrationFSM.fill_schedule))
+# async def register_user(message: Message, state: FSMContext):
+#     """Read shedulers and process register user"""
+#     # TODO: сохранение данных пользователя в датакласс, затем в базу данных
+#     data_user = await state.get_data
+#     await state.clear() # clear state

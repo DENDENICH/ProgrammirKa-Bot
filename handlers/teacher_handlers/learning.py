@@ -17,6 +17,8 @@ from filters.filters import(
     command_no_complete_homework
 )
 
+from schemas.student import StudentKeyDataFSM
+
 
 learning_teacher_router = Router()
 
@@ -34,7 +36,7 @@ class FSMLearning(StatesGroup):
 # command /manage_student
 # choose student
 @learning_teacher_router.message(Command("edit_student"))
-async def manage_students(message: Message, state: FSMContext):
+async def manage_students(message: Message):
     """Handler for choose student"""
     students = await data_base.get_users()
     await message.answer(
@@ -50,10 +52,10 @@ async def manage_students(message: Message, state: FSMContext):
         )
 async def choose_student(callback: CallbackQuery, state: FSMContext):
     """Reading choose student for edit his data"""
-    name, id = parse_data.parse_data_edit_student(data=callback.data)
+    name, tg_id = parse_data.parse_data_edit_student(data=callback.data)
     await state.update_data({
-        "name_student": name, 
-        "id_student": id
+        StudentKeyDataFSM.name: name,
+        StudentKeyDataFSM.tg_id: tg_id
         })
     await callback.answer(
         text=f"Ученик {name}",
@@ -71,12 +73,12 @@ async def choose_student(callback: CallbackQuery, state: FSMContext):
     )
 async def choose_schedule(callback: CallbackQuery, state: FSMContext):
     """Set state schedule for set schedule"""
-    id = await state.get_data("id_student")
+    tg_id = await state.get_value(StudentKeyDataFSM.tg_id)
     # TODO: получение расписания из БД или машины состояний
-    exists_shedulers = json_schedule.get_schedule(tg_id=id)
+    exists_schedulers = json_schedule.get_schedule(tg_id=tg_id)
     await callback.message.edit_text(
         text="Текущее расписание \n"
-        f"{exists_shedulers}\n"
+        f"{exists_schedulers}\n"
         "Новое расписание:\n"
         "Формат:\n"
         "<день недели> - <время>\n<день недели> - <время>",
@@ -94,8 +96,8 @@ async def choose_schedule(callback: CallbackQuery, state: FSMContext):
 async def choose_homework(callback: CallbackQuery, state: FSMContext):
     """Set state homework for set homework"""
     # TODO: получение домашнего задания из БД или машины состояний
-    id = await state.get_data("id_student")
-    exists_homework = await data_base.get_homework(tg_id=id)
+    tg_id = await state.get_value(StudentKeyDataFSM.tg_id)
+    exists_homework = await data_base.get_homework(tg_id=tg_id)
     await callback.message.edit_text(
         text="Текущее задание:\n"
         f"{exists_homework.homework}\n"
@@ -113,9 +115,17 @@ async def choose_homework(callback: CallbackQuery, state: FSMContext):
 async def process_homework(message: Message, state: FSMContext):
     """Set new homework for student"""
     homework = message.text
-    # TODO: Сохранить домашнее задание в базе данных
-    await message.answer(f"Домашнее задание назначено")
-    await state.clear()
+    tg_id = await state.get_value(StudentKeyDataFSM.tg_id)
+    try:
+        await data_base.set_homework(
+            tg_id=tg_id,
+            homework=homework
+        )
+    except: # TODO: возвести в конструкцию try/except потенциально опасные места. Сделать кастомные обработчики ошибок
+        await message.answer(f"Ошибка при сохранении домашнего задания")
+    else:
+        await message.answer(f"Домашнее задание назначено")
+        await state.clear()
 
 
 # This handler will trigered if schedule state is active
@@ -145,7 +155,7 @@ async def yes_complete_lesson(callback: CallbackQuery):
 async def yes_complete_lesson(callback: CallbackQuery, state: FSMContext):
     """Notificate about new homework, and update nofications homework"""
     await state.set_data(
-        {'tg_id_homework': parse_data.parse_id_in_query_complete_homework(data=callback.data)}
+        {StudentKeyDataFSM.tg_id: parse_data.parse_id_in_query_complete_homework(data=callback.data)}
         )
     await callback.message.edit_text(
         "Назначьте новое домашнее задание:"
@@ -157,9 +167,9 @@ async def yes_complete_lesson(callback: CallbackQuery, state: FSMContext):
 @learning_teacher_router.message(StateFilter(FSMLearning.set_new_homework))
 async def yes_complete_lesson(message: Message, state: FSMContext):
     """Notificate about new homework, and update nofications homework"""
-    id = await state.get_value('tg_id_homework')
+    tg_id = await state.get_value(StudentKeyDataFSM.tg_id)
     await data_base.set_homework(
-        tg_id=id,
+        tg_id=tg_id,
         new_homework=message.text.strip()
         )
     await message.answer(
