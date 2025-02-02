@@ -1,6 +1,5 @@
 import json
 import aiosqlite
-import asyncio
 
 from utils.parse_datetime import DateSchedule
 from schemas.student import Student
@@ -127,14 +126,14 @@ class JsonSchedule:
             self.data_schedule = json.load(file) # load json from file
 
 
-    async def set_new_schedule(self, data: DateSchedule, user_id: int):
+    def set_new_schedule(self, data: DateSchedule, user_id: int):
         """Method for set new schedule and delete old on user"""
         self.data_schedule[user_id] = json.dumps(data)
         with open(self.path, 'w', encoding='utf-8') as file:
             json.dump(self.data_schedule, file, ensure_ascii=False) # save json to file
 
 
-    async def get_schedule(self, tg_id: int):
+    def get_schedule(self, tg_id: int):
         """Method for get schedule on user"""
         pass
 

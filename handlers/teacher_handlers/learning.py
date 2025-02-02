@@ -1,4 +1,3 @@
-import re
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
@@ -7,7 +6,7 @@ from aiogram.fsm.state import StatesGroup, State
 
 from utils import parse_datetime, parse_data
 
-from data_base import data_base
+from data_base import data_base, json_schedule
 
 from keywords.teacher import action_on_student, get_keywords_of_students
 from keywords.basic import cancel
@@ -17,6 +16,7 @@ from filters.filters import(
     command_yes_complete_homework,
     command_no_complete_homework
 )
+
 
 learning_teacher_router = Router()
 
@@ -51,8 +51,10 @@ async def manage_students(message: Message, state: FSMContext):
 async def choose_student(callback: CallbackQuery, state: FSMContext):
     """Reading choose student for edit his data"""
     name, id = parse_data.parse_data_edit_student(data=callback.data)
-    
-    # TODO: сохранение tg_id в машину состояний
+    await state.update_data({
+        "name_student": name, 
+        "id_student": id
+        })
     await callback.answer(
         text=f"Ученик {name}",
         reply_markup=action_on_student,
@@ -69,13 +71,12 @@ async def choose_student(callback: CallbackQuery, state: FSMContext):
     )
 async def choose_schedule(callback: CallbackQuery, state: FSMContext):
     """Set state schedule for set schedule"""
-    # data = await state.get_data()
-    # selected_student = data.get("selected_student")
+    id = await state.get_data("id_student")
     # TODO: получение расписания из БД или машины состояний
-    exists = None
+    exists_shedulers = json_schedule.get_schedule(tg_id=id)
     await callback.message.edit_text(
         text="Текущее расписание \n"
-        f"{exists}\n"
+        f"{exists_shedulers}\n"
         "Новое расписание:\n"
         "Формат:\n"
         "<день недели> - <время>\n<день недели> - <время>",
@@ -92,13 +93,14 @@ async def choose_schedule(callback: CallbackQuery, state: FSMContext):
     )
 async def choose_homework(callback: CallbackQuery, state: FSMContext):
     """Set state homework for set homework"""
-    # data = await state.get_data()
-    # selected_student = data.get("selected_student")
     # TODO: получение домашнего задания из БД или машины состояний
-    exists = None
+    id = await state.get_data("id_student")
+    exists_homework = await data_base.get_homework(tg_id=id)
     await callback.message.edit_text(
         text="Текущее задание:\n"
-        f"{exists}\n"
+        f"{exists_homework.homework}\n"
+        "Статус выполнения\n"
+        f"{'Выполнен' if exists_homework.status_homework else 'Невыполнен'}"
         "Новое домашнее задание:",
         reply_markup=cancel
     )
