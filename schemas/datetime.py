@@ -1,27 +1,32 @@
-from typing import Optional
+from typing import Optional, TypedDict
 from dataclasses import dataclass, field
 from enum import Enum
 
 
-@dataclass(slots=True)
-class DateSchedule:
-    hour: int
-    minute: int
-    lesson_days_week: list[str]
-    not_lesson_days_week: Optional[list[str] | None] = field(default=None)
+class DateLesson(TypedDict):
+    time: str
+    day: str
 
-    def __post_init__(self):
-        if not self.not_lesson_days_week:
-            self.not_lesson_days_week = self.get_list_not_lesson_days_week()
 
-    def get_list_not_lesson_days_week(self) -> list[str]:
-        pass
+# @dataclass(slots=True)
+# class DateSchedule:
+#     hour: int
+#     minute: int
+#     lesson_days_week: list[str]
+#     not_lesson_days_week: Optional[list[str] | None] = field(default=None)
 
-    def get_string_not_lesson_days(self) -> str:
-        pass
+#     def __post_init__(self):
+#         if not self.not_lesson_days_week:
+#             self.not_lesson_days_week = self.get_list_not_lesson_days_week()
 
-    def get_string_lesson_days(self) -> str:
-        pass
+#     def get_list_not_lesson_days_week(self) -> list[str]:
+#         pass
+
+#     def get_string_not_lesson_days(self) -> str:
+#         pass
+
+#     def get_string_lesson_days(self) -> str:
+#         pass
 
 
 class DayWeek(str, Enum):

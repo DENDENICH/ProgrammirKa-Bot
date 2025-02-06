@@ -1,7 +1,7 @@
 import json
 import aiosqlite
 
-from utils.parse_datetime import DateSchedule
+from schemas.datetime import DateLesson
 from schemas.student import Student
 from schemas.homework import HomeworkInformation
 
@@ -123,14 +123,14 @@ class JsonSchedule:
     def __init__(self, path: str = 'schedule.json'):
         self.path = path
         with open(self.path, encoding='utf-8') as file:
-            self.data_schedule = json.load(file) # load json from file
+            self.data_schedule = json.load(file.read()) # load json from file
 
 
-    def set_new_schedule(self, data: DateSchedule, user_id: int):
+    def set_new_schedule(self, data: list[DateLesson], user_id: int):
         """Method for set new schedule and delete old on user"""
-        self.data_schedule[user_id] = json.dumps(data)
+        self.data_schedule[str(user_id)] = data
         with open(self.path, 'w', encoding='utf-8') as file:
-            json.dump(self.data_schedule, file, ensure_ascii=False) # save json to file
+            json.dump(self.data_schedule, file, ensure_ascii=False, indent=4) # save json to file
 
 
     def get_schedule(self, tg_id: int):

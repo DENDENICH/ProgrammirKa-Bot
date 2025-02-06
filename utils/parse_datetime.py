@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from datetime import time
 
-from schemas.datetime import DateSchedule, DayWeek
+from schemas.datetime import DateLesson, DayWeek
 
 
-def parse_schedule(schedule: str) -> list[DateSchedule]:
+def parse_schedule(schedule: str) -> list[DateLesson]:
     """Parse all date from string schedules
     
     :param schedule: строка с расписанием.
