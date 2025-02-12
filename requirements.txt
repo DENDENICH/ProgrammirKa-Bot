@@ -1,0 +1,8 @@
+# for checks code
+mypy
+# develop librari
+aiogram
+aiogram-dialog
+environs
+#for redis
+redis
