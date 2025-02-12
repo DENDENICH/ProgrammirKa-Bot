@@ -22,6 +22,16 @@ def get_id_notification_homework(
         custom_prefix: str,
         main_prefix: str = "homework",
 ) -> str:
-    pass
+    """
+
+    Args:
+        tg_id (int): tg id user 
+        custom_prefix (str): custom unique prefix (for example: time '13:00')
+        main_prefix (str, optional): main prefix for homework notification. Defaults to "homework".
+
+    Returns:
+        str: unique id
+    """
+    return f"{tg_id}/{main_prefix}-{custom_prefix}"
 
 
