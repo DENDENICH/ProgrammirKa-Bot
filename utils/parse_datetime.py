@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 from datetime import time
 
-from schemas.datetime import DateLesson, DayWeek
+from schemas.datetime import DateLesson, DayWeek, TimeData
 
 
 def parse_schedule(schedule: str) -> list[DateLesson]:
     """Parse all date from string schedules
     
-    :param schedule: строка с расписанием.
-    :return: список объектов datetime.
+    :param schedule: string for schedule.
+    :return: list DateLesson.
     """
     
     # split all date
@@ -21,19 +21,19 @@ def parse_schedule(schedule: str) -> list[DateLesson]:
         day, t = line.split(" - ")
         day, t = int(day.strip()), t.strip()
         
-        if day not in ['pass']:
+        if day not in DayWeek:
             raise ValueError(f"Некорректный день недели: {day}")
         
         # parsing time
         hours, minutes = map(int, t.split(":"))
         result.append(
-            DateSchedule(
-        time_scheldue=time(hour=hours, minute=minutes),
-        day_week=DayWeek[day]
-        )
+            DateLesson(
+                day=day,
+                time=TimeData(
+                    hour=hours,
+                    minute=minutes
+                )
+            )
     )
         
     return result
-
-
-print(DayWeek.find('week'))

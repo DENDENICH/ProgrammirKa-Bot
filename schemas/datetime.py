@@ -3,8 +3,14 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 
+@dataclass(frozen=True, slots=True)
+class TimeData:
+    hour: int
+    minute: int
+
+
 class DateLesson(TypedDict):
-    time: str
+    time: TimeData
     day: str
 
 
